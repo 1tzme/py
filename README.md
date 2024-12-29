@@ -43,9 +43,3 @@ This repository contains a simple Streamlit application for interacting with LLM
 2. Open the app in your browser at `http://localhost:8501`.
 
 3. Select a model from the sidebar, input your question, and interact with the assistant in real-time.
-4. 
-
-## Related Projects
-
-- [Chat with LLMs (ChromaDB Integration)](https://github.com/yourusername/streamlit-llm-chromadb)
-  - This repository contains a similar project but with `ChromaDB` integration for storing and retrieving chat logs. Note that the ChromaDB integration may not work due to unresolved server issues.
