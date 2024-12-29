@@ -14,7 +14,7 @@ This repository contains a simple Streamlit application for interacting with LLM
 1. Clone this repository:
 
     ```bash
-    git clone https://github.com/yourusername/streamlit-llm-chat.git
+    git clone https://github.com/1tzme/streamlit-llm-chat.git
     cd streamlit-llm-chat
     ```
 
