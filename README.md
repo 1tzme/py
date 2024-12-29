@@ -2,11 +2,10 @@
 
 # Chat with LLMs Models
 
-This repository contains a simple Streamlit application for interacting with LLMs (Large Language Models) using the `Ollama` library. The app enables users to input queries and receive responses from a selected language model in real-time.
+This repository contains a simple Streamlit application for interacting with LLMs (Large Language Models) using the `Ollama` library. The app enables users to input queries and receive responses from a language model in real-time.
 
 ## Features
 - Stream chat interface with real-time responses.
-- Select from multiple LLM models.
 - User-friendly interface powered by Streamlit.
 
 ## Installation
@@ -14,7 +13,7 @@ This repository contains a simple Streamlit application for interacting with LLM
 1. Clone this repository:
 
     ```bash
-    git clone https://github.com/1tzme/streamlit-llm-chat.git
+    git clone https://github.com/1tzme/py
     cd streamlit-llm-chat
     ```
 
