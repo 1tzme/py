@@ -9,6 +9,9 @@ logging.basicConfig(level=logging.INFO)
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 
+if 'documents' not in st.session_state:
+    st.session_state.documents = ""
+
 def stream_chat(model, messages):
     try:
         llm = Ollama(model=model, request_timeout=120.0)
@@ -24,12 +27,37 @@ def stream_chat(model, messages):
         logging.error(f"Error during streaming: {str(e)}")
         raise e
 
+def load_documents(uploaded_files):
+    try:
+        documents_content = ""
+        for uploaded_file in uploaded_files:
+            file_content = uploaded_file.read().decode("utf-8")
+            documents_content += f"\n{file_content}"
+        st.session_state.documents = documents_content
+        st.success("Documents uploaded successfully!")
+        logging.info("Documents loaded.")
+    except Exception as e:
+        st.error("Failed to load documents.")
+        logging.error(f"Error loading documents: {str(e)}")
+
 def main():
-    st.title("Chat with LLMs Models")
+    st.title("Chat with LLMs Ollama")
     logging.info("App started")
 
     model = st.sidebar.selectbox("Choose a model", ["mymodel", "llama3.1:8b"])
     logging.info(f"Model selected: {model}")
+
+    st.sidebar.header("Upload Documents")
+    uploaded_files = st.sidebar.file_uploader(
+        "Upload .txt files", type=["txt"], accept_multiple_files=True
+    )
+
+    if st.sidebar.button("Load Documents") and uploaded_files:
+        load_documents(uploaded_files)
+
+    if st.session_state.documents:
+        with st.expander("Loaded Documents Content"):
+            st.text_area("Documents Content", st.session_state.documents, height=200, disabled=True)
 
     if prompt := st.chat_input("Your question"):
         st.session_state.messages.append({"role": "user", "content": prompt})
@@ -46,7 +74,19 @@ def main():
 
                 with st.spinner("Writing..."):
                     try:
-                        messages = [ChatMessage(role=msg["role"], content=msg["content"]) for msg in st.session_state.messages]
+                        if st.session_state.documents:
+                            system_message = ChatMessage(
+                                role="system",
+                                content=f"The following context is from the uploaded documents: {st.session_state.documents}"
+                            )
+                            messages = [system_message] + [
+                                ChatMessage(role=msg["role"], content=msg["content"]) for msg in st.session_state.messages
+                            ]
+                        else:
+                            messages = [
+                                ChatMessage(role=msg["role"], content=msg["content"]) for msg in st.session_state.messages
+                            ]
+
                         response_message = stream_chat(model, messages)
                         duration = time.time() - start_time
                         response_message_with_duration = f"{response_message}\n\nDuration: {duration:.2f} seconds"
