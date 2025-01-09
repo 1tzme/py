@@ -41,4 +41,8 @@ This repository contains a simple Streamlit application for interacting with LLM
 
 2. Open the app in your browser at `http://localhost:8501`.
 
-3. Select a model from the sidebar, input your question, and interact with the assistant in real-time.
+3. Select a model from the sidebar.
+
+4. (Optional) Drag and drop or Browse files and press 'Load Documents'.
+
+5. Enter your question and interact with assistant in real-time.
