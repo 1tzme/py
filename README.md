@@ -36,7 +36,7 @@ This repository contains a simple Streamlit application for interacting with LLM
 1. Run the Streamlit app:
 
     ```bash
-    streamlit run src/app.py
+    streamlit run app.py
     ```
 
 2. Open the app in your browser at `http://localhost:8501`.
