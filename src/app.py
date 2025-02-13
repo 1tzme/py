@@ -7,21 +7,17 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-# Параметры
 PDF_DIR = "uploaded_pdfs"
 DB_DIR = "chroma_db"
 
-# Создание директории для загрузки файлов
 os.makedirs(PDF_DIR, exist_ok=True)
 
-# Инициализация ChromaDB
 chroma_client = chromadb.PersistentClient(path=DB_DIR)
 collection = chroma_client.get_or_create_collection(
     name="constitution_data",
     metadata={"description": "Kazakhstan Constitution"}
 )
 
-# Функция для извлечения текста из PDF с номерами статей
 def extract_text_from_pdf(pdf_path):
     with pdfplumber.open(pdf_path) as pdf:
         text = []
@@ -32,7 +28,6 @@ def extract_text_from_pdf(pdf_path):
                     text.append(f"Page {i+1}: {line}")
         return text
 
-# Функция для загрузки и обработки документов с привязкой к номерам статей
 def load_documents():
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     for file in os.listdir(PDF_DIR):
@@ -43,19 +38,16 @@ def load_documents():
             for i, chunk in enumerate(chunks):
                 collection.add(documents=[chunk], ids=[f"{file}_{i}"])
 
-# Загрузка документов
 if not collection.peek():
     load_documents()
 
-# Функция для поиска релевантного контекста с указанием номеров статей
 def query_chromadb(query_text, n_results=5):
     results = collection.query(query_texts=[query_text], n_results=n_results)
     documents = results.get("documents", [])
     if documents and isinstance(documents[0], list):
-        documents = [doc for sublist in documents for doc in sublist]  # Распаковываем вложенные списки
+        documents = [doc for sublist in documents for doc in sublist]
     return "\n\n".join(documents)
 
-# Настройка LLM
 model_options = {"Ollama": "llama3.2", "Groq": "groq-model", "Gemini": "gemini-pro", "OpenAI": "gpt-4"}
 selected_model = st.sidebar.selectbox("Choose LLM Model", list(model_options.keys()))
 llm_model = model_options[selected_model]
@@ -64,7 +56,6 @@ def query_ollama(prompt):
     llm = OllamaLLM(model=llm_model, host="http://localhost:11434")
     return llm.invoke(prompt)
 
-# Streamlit UI
 st.title("AI Assistant: Constitution of Kazakhstan")
 
 uploaded_files = st.file_uploader("Upload PDF files", type=["pdf"], accept_multiple_files=True)
