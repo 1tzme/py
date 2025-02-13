@@ -3,12 +3,12 @@ import chromadb
 import streamlit as st
 from langchain_ollama import OllamaLLM
 import pdfplumber
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 PDF_DIR = "uploaded_pdfs"
 DB_DIR = "chroma_db"
+CONSTITUTION_PDF = "pdf_kz_const.pdf"
+CONSTITUTION_TXT = "constitution.txt"
 
 os.makedirs(PDF_DIR, exist_ok=True)
 
@@ -38,18 +38,29 @@ def extract_text_from_txt(txt_path):
 
 def load_documents():
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    files_to_load = []
+
+    if os.path.exists(CONSTITUTION_PDF):
+        files_to_load.append(CONSTITUTION_PDF)
+    elif os.path.exists(CONSTITUTION_TXT):
+        files_to_load.append(CONSTITUTION_TXT)
+
     for file in os.listdir(PDF_DIR):
         file_path = os.path.join(PDF_DIR, file)
-        if file.endswith(".pdf"):
+        if file.endswith(".pdf") or file.endswith(".txt"):
+            files_to_load.append(file_path)
+
+    for file_path in files_to_load:
+        if file_path.endswith(".pdf"):
             text = extract_text_from_pdf(file_path)
-        elif file.endswith(".txt"):
+        elif file_path.endswith(".txt"):
             text = extract_text_from_txt(file_path)
         else:
             continue
-        
+
         chunks = text_splitter.split_text("\n".join(text))
         for i, chunk in enumerate(chunks):
-            collection.add(documents=[chunk], ids=[f"{file}_{i}"])
+            collection.add(documents=[chunk], ids=[f"{os.path.basename(file_path)}_{i}"])
 
 if not collection.peek():
     load_documents()
@@ -61,7 +72,7 @@ def query_chromadb(query_text, n_results=5):
         documents = [doc for sublist in documents for doc in sublist]
     return "\n\n".join(documents)
 
-model_options = {"Ollama 3.2": "llama3.2", "Ollama 3.1:8b" : "llama3.1:8b"}
+model_options = {"Ollama 3.2": "llama3.2", "Ollama 3.1:8b": "llama3.1:8b"}
 selected_model = st.sidebar.selectbox("Choose LLM Model", list(model_options.keys()))
 llm_model = model_options[selected_model]
 
@@ -82,11 +93,13 @@ if uploaded_files:
 
 query_input = st.text_area("Enter your question about the Constitution:")
 if st.button("Submit") and query_input.strip():
+    if not collection.peek():
+        load_documents()
+
     context = query_chromadb(query_input)
     query_with_context = f"You are a professional legal expert specializing in the Constitution of Kazakhstan. Always cite the exact articles and their numbers when answering.\n\nContext: {context}\n\nQuestion: {query_input}" 
     response = query_ollama(query_with_context)
 
-    # Добавляем в историю
     st.session_state.chat_history.append((query_input, response))
 
     st.write(f"**Q:** {query_input}")
