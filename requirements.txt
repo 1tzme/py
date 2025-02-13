@@ -1,3 +1,4 @@
-chromadb
-langchain-ollama
 streamlit
+langchain
+chromadb
+pdfplumber
